@@ -1,0 +1,29 @@
+{
+  "name": "conflux-address-js",
+  "version": "1.0.0",
+  "description": "The encoder and decoder for Conflux Network address",
+  "main": "lib/index.js",
+  "repository": "https://github.com/resodo/conflux-address-js.git",
+  "author": "ypliu <resodo.liu@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "bigi": "^1.4.2"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.12.10",
+    "@babel/core": "^7.12.10",
+    "@babel/preset-env": "^7.12.11",
+    "jest": "^26.6.3"
+  },
+  "scripts": {
+    "test": "jest",
+    "build": "babel src -d lib"
+  },
+  "babel": {
+    "presets": [
+      [
+        "@babel/preset-env"
+      ]
+    ]
+  }
+}
