@@ -1,24 +1,24 @@
-'use strict';
-let BigInteger = require('bigi');
-let ALPHABET = '0123456789abcdefghjkmnprstuvwxyz';
+'use strict'
+const BigInteger = require('bigi')
+const ALPHABET = '0123456789abcdefghjkmnprstuvwxyz'
 
 // pre-compute lookup table
-let SEPARATOR = ':';
-let CSLEN = 8;
-let ALPHABET_MAP = {};
+const SEPARATOR = ':'
+const CSLEN = 8
+const ALPHABET_MAP = {}
 for (let z = 0; z < ALPHABET.length; z++) {
-  let x = ALPHABET.charAt(z);
+  const x = ALPHABET.charAt(z)
   if (ALPHABET_MAP[x] !== undefined) {
     throw new TypeError(x + ' is ambiguous')
   }
   ALPHABET_MAP[x] = z
 }
 
-function polymodStep(pre) {
-  let b = pre.shiftRight(35);
-  let mask = BigInteger.fromHex('07ffffffff');
+function polymodStep (pre) {
+  const b = pre.shiftRight(35)
+  const mask = BigInteger.fromHex('07ffffffff')
 
-  let v = pre.and(mask).shiftLeft(new BigInteger('5'));
+  let v = pre.and(mask).shiftLeft(new BigInteger('5'))
 
   if (b.and(new BigInteger('1')).intValue() > 0) {
     v = v.xor(BigInteger.fromHex('98f2bc8e61'))
@@ -39,54 +39,54 @@ function polymodStep(pre) {
   return v
 }
 
-function prefixChk(prefix) {
-  let chk = new BigInteger('1');
+function prefixChk (prefix) {
+  let chk = new BigInteger('1')
   for (let i = 0; i < prefix.length; ++i) {
-    let c = prefix.charCodeAt(i);
+    const c = prefix.charCodeAt(i)
 
-    let mixwith = new BigInteger('' + (c & 0x1f));
+    const mixwith = new BigInteger('' + (c & 0x1f))
     chk = polymodStep(chk).xor(mixwith)
   }
 
-  chk = polymodStep(chk);
+  chk = polymodStep(chk)
   return chk
 }
 
-function encode(prefix, words) {
+function encode (prefix, words) {
   // too long?
   if ((prefix.length + CSLEN + 1 + words.length) > 90) {
     throw new TypeError('Exceeds Base32 maximum length')
   }
 
-  prefix = prefix.toLowerCase();
+  prefix = prefix.toLowerCase()
 
   // determine chk mod
-  let chk = prefixChk(prefix);
-  let result = prefix + SEPARATOR;
+  let chk = prefixChk(prefix)
+  let result = prefix + SEPARATOR
   for (let i = 0; i < words.length; ++i) {
-    let x = words[i];
+    const x = words[i]
     if ((x >>> 5) !== 0) {
       throw new Error('Non 5-bit word')
     }
 
-    chk = polymodStep(chk).xor(new BigInteger('' + x));
+    chk = polymodStep(chk).xor(new BigInteger('' + x))
     result += ALPHABET.charAt(x)
   }
 
   for (let i = 0; i < CSLEN; ++i) {
     chk = polymodStep(chk)
   }
-  chk = chk.xor(new BigInteger('1'));
+  chk = chk.xor(new BigInteger('1'))
   for (let i = 0; i < CSLEN; ++i) {
-    let pos = 5 * (CSLEN - 1 - i);
-    let v2 = chk.shiftRight(new BigInteger('' + pos)).and(BigInteger.fromHex('1f'));
+    const pos = 5 * (CSLEN - 1 - i)
+    const v2 = chk.shiftRight(new BigInteger('' + pos)).and(BigInteger.fromHex('1f'))
     result += ALPHABET.charAt(v2.toString(10))
   }
 
   return result
 }
 
-function decode(str) {
+function decode (str) {
   if (str.length < 8) {
     throw new TypeError(str + ' too short')
   }
@@ -95,15 +95,15 @@ function decode(str) {
   }
 
   // don't allow mixed case
-  let lowered = str.toLowerCase();
-  let uppered = str.toUpperCase();
+  const lowered = str.toLowerCase()
+  const uppered = str.toUpperCase()
   if (str !== lowered && str !== uppered) {
     throw new Error('Mixed-case string ' + str)
   }
 
-  str = lowered;
+  str = lowered
 
-  let split = str.lastIndexOf(SEPARATOR);
+  const split = str.lastIndexOf(SEPARATOR)
   if (split === -1) {
     throw new Error('No separator character for ' + str)
   }
@@ -112,22 +112,22 @@ function decode(str) {
     throw new Error('Missing prefix for ' + str)
   }
 
-  let prefix = str.slice(0, split);
-  let wordChars = str.slice(split + 1);
+  const prefix = str.slice(0, split)
+  const wordChars = str.slice(split + 1)
   if (wordChars.length < 6) {
     throw new Error('Data too short')
   }
 
-  let chk = prefixChk(prefix);
-  let words = [];
+  let chk = prefixChk(prefix)
+  const words = []
   for (let i = 0; i < wordChars.length; ++i) {
-    let c = wordChars.charAt(i);
-    let v = ALPHABET_MAP[c];
+    const c = wordChars.charAt(i)
+    const v = ALPHABET_MAP[c]
     if (v === undefined) {
       throw new Error('Unknown character ' + c)
     }
 
-    chk = polymodStep(chk).xor(new BigInteger('' + v));
+    chk = polymodStep(chk).xor(new BigInteger('' + v))
     // not in the checksum?
     if (i + CSLEN >= wordChars.length) {
       continue
@@ -139,21 +139,21 @@ function decode(str) {
     throw new Error('Invalid checksum for ' + str)
   }
 
-  return {prefix, words}
+  return { prefix, words }
 }
 
-function convert(data, inBits, outBits, pad) {
-  let value = 0;
-  let bits = 0;
-  let maxV = (1 << outBits) - 1;
+function convert (data, inBits, outBits, pad) {
+  let value = 0
+  let bits = 0
+  const maxV = (1 << outBits) - 1
 
-  let result = [];
+  const result = []
   for (let i = 0; i < data.length; ++i) {
-    value = (value << inBits) | data[i];
-    bits += inBits;
+    value = (value << inBits) | data[i]
+    bits += inBits
 
     while (bits >= outBits) {
-      bits -= outBits;
+      bits -= outBits
       result.push((value >>> bits) & maxV)
     }
   }
@@ -174,12 +174,12 @@ function convert(data, inBits, outBits, pad) {
   return result
 }
 
-function toWords(bytes) {
+function toWords (bytes) {
   return convert(bytes, 8, 5, true)
 }
 
-function fromWords(words) {
+function fromWords (words) {
   return convert(words, 5, 8, false)
 }
 
-module.exports = {decode, encode, toWords, fromWords};
+module.exports = { decode, encode, toWords, fromWords }

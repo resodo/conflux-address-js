@@ -1,66 +1,67 @@
-'use strict';
+'use strict'
 /** global: Buffer */
 
-const VERSION_BYTE = 0;
-const NET_ID_LIMIT = 0xFFFFFFFF;
+const VERSION_BYTE = 0
+const NET_ID_LIMIT = 0xFFFFFFFF
 
-let base32 = require('./base32');
+const base32 = require('./base32')
 
-function encodeNetId(netId) {
+function encodeNetId (netId) {
   if (!Number.isInteger(netId)) {
-    throw new Error("netId should be passed as an integer")
+    throw new Error('netId should be passed as an integer')
   }
   if (netId <= 0 || netId > NET_ID_LIMIT) {
-    throw new Error("netId should be passed as in range [1, 0xFFFFFFFF]")
+    throw new Error('netId should be passed as in range [1, 0xFFFFFFFF]')
   }
 
   switch (netId) {
     case 1:
-      return "cfxtest";
+      return 'cfxtest'
     case 1029:
-      return "cfx";
+      return 'cfx'
     default:
       return `net${netId}`
   }
 }
 
-function isValidNetId(netId) {
+function isValidNetId (netId) {
   return /^([1-9]\d*)$/.test(netId) && Number(netId) <= NET_ID_LIMIT
 }
 
-function decodeNetId(payload) {
+function decodeNetId (payload) {
   switch (payload) {
-    case "cfxtest":
-      return 1;
-    case "cfx":
-      return 1029;
-    default:
-      let prefix = payload.slice(0, 3);
-      let netId = payload.slice(3);
-      if (prefix !== "net" || !isValidNetId(netId)) {
+    case 'cfxtest':
+      return 1
+    case 'cfx':
+      return 1029
+    default: {
+      const prefix = payload.slice(0, 3)
+      const netId = payload.slice(3)
+      if (prefix !== 'net' || !isValidNetId(netId)) {
         throw new Error("netId prefix should be passed by 'cfx', 'cfxtest' or 'net[n]' ")
       }
       if (Number(netId) === 1 || Number(netId) === 1029) {
-        throw new Error("net1 or net1029 are invalid")
+        throw new Error('net1 or net1029 are invalid')
       }
       return Number(netId)
+    }
   }
 }
 
-function encodePayload(hexAddress) {
+function encodePayload (hexAddress) {
   return Buffer.concat([Buffer.from([VERSION_BYTE]), hexAddress])
 }
 
-function decodePayload(payload) {
+function decodePayload (payload) {
   if (payload[0] !== VERSION_BYTE) {
-    throw new Error("Can not recognize version byte")
+    throw new Error('Can not recognize version byte')
   }
   return Buffer.from(payload.slice(1))
 }
 
-function encode(hexAddress, netId) {
+function encode (hexAddress, netId) {
   if (!(hexAddress instanceof Buffer)) {
-    throw new Error("hexAddress should be passed as a Buffer")
+    throw new Error('hexAddress should be passed as a Buffer')
   }
 
   return base32.encode(
@@ -69,11 +70,11 @@ function encode(hexAddress, netId) {
   )
 }
 
-function decode(address) {
-  let result = base32.decode(address);
-  let data = base32.fromWords(result.words);
+function decode (address) {
+  const result = base32.decode(address)
+  const data = base32.fromWords(result.words)
   if (data.length < 1) {
-    throw new Error("Empty payload in address")
+    throw new Error('Empty payload in address')
   }
 
   return {
@@ -82,4 +83,4 @@ function decode(address) {
   }
 }
 
-module.exports = {decode: decode, encode: encode};
+module.exports = { decode: decode, encode: encode }
