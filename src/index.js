@@ -59,28 +59,73 @@ function decodePayload (payload) {
   return Buffer.from(payload.slice(1))
 }
 
-function encode (hexAddress, netId) {
+function getAddressType (hexAddress) {
+  if (hexAddress.length < 1) {
+    throw new Error('Empty payload in address')
+  }
+
+  switch (hexAddress[0] & 0xf0) {
+    case 0x10:
+      return 'user'
+    case 0x80:
+      return 'contract'
+    case 0x00:
+      return 'builtin'
+    default:
+      throw new Error('hexAddress should start with 0x0, 0x1 or 0x8')
+  }
+}
+
+function encode (hexAddress, netId, verbose = false) {
   if (!(hexAddress instanceof Buffer)) {
     throw new Error('hexAddress should be passed as a Buffer')
   }
 
-  return base32.encode(
+  if (hexAddress.length < 20) {
+    throw new Error('hexAddress should be at least 20 bytes')
+  }
+
+  const addressType = getAddressType(hexAddress)
+
+  let encodedAddress = base32.encode(
     encodeNetId(netId),
     base32.toWords(encodePayload(hexAddress))
   )
+
+  if (verbose) {
+    const [prefix, payload] = encodedAddress.split(':')
+    encodedAddress = [prefix, `type=${addressType}`, payload].join(':')
+  }
+  return encodedAddress
 }
 
 function decode (address) {
-  const result = base32.decode(address)
+  const splits = address.split(':')
+  let shouldHaveType = ''
+
+  let reducedAddress = address
+  if (splits.length === 3) {
+    shouldHaveType = splits[1]
+    reducedAddress = [splits[0], splits[2]].join(':')
+  }
+
+  const result = base32.decode(reducedAddress)
   const data = base32.fromWords(result.words)
   if (data.length < 1) {
     throw new Error('Empty payload in address')
   }
 
-  return {
+  const returnValue = {
     hexAddress: decodePayload(data),
-    netId: decodeNetId(result.prefix)
+    netId: decodeNetId(result.prefix),
+    type: getAddressType(decodePayload(data))
   }
+
+  if (shouldHaveType !== '' && `type=${returnValue.type}` !== shouldHaveType) {
+    throw new Error('Type of address doesn\'t match')
+  }
+
+  return returnValue
 }
 
 module.exports = { decode: decode, encode: encode }
