@@ -25,7 +25,7 @@ function encodeNetId(netId) {
 }
 
 function isValidNetId(netId) {
-  return /^([1-9]\d*)$/.test(netId) && Number(str) <= NET_ID_LIMIT
+  return /^([1-9]\d*)$/.test(netId) && Number(netId) <= NET_ID_LIMIT
 }
 
 function decodeNetId(payload) {
