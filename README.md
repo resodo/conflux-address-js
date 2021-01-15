@@ -1,11 +1,11 @@
 # conflux-address-js
-The simple encoder and decoder for Conflux address
+The simple encoder and decoder for Conflux address.
 
 Check [CIP-37](https://github.com/Conflux-Chain/CIPs/pull/53/) for the protocols.
 
 ## Usage
 
-### Dncoding
+### Encoding
 
 ```javascript
 const confluxAddr = require('conflux-address-js')
