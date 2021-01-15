@@ -28,5 +28,9 @@
         "@babel/preset-env"
       ]
     ]
-  }
+  },
+  "files": [
+    "lib",
+    "src"
+  ]
 }
