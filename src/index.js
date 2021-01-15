@@ -94,12 +94,19 @@ function encode (hexAddress, netId, verbose = false) {
 
   if (verbose) {
     const [prefix, payload] = encodedAddress.split(':')
-    encodedAddress = [prefix, `type.${addressType}`, payload].join(':')
+    encodedAddress = [prefix, `type.${addressType}`, payload].join(':').toUpperCase()
   }
   return encodedAddress
 }
 
 function decode (address) {
+  // don't allow mixed case
+  const lowered = address.toLowerCase()
+  const uppered = address.toUpperCase()
+  if (address !== lowered && address !== uppered) {
+    throw new Error('Mixed-case address ' + address)
+  }
+
   const splits = address.split(':')
   let shouldHaveType = ''
 
@@ -121,7 +128,7 @@ function decode (address) {
     type: getAddressType(decodePayload(data))
   }
 
-  if (shouldHaveType !== '' && `type.${returnValue.type}` !== shouldHaveType) {
+  if (shouldHaveType !== '' && `type.${returnValue.type}` !== shouldHaveType.toLowerCase()) {
     throw new Error('Type of address doesn\'t match')
   }
 

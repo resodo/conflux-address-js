@@ -16,7 +16,7 @@ console.log(confluxAddr.encode(hexBuffer, netId))
 // cfx:0086ujfsa1a11uuecwen3xytdmp8f03v140ypk3mxc
 
 console.log(confluxAddr.encode(hexBuffer, netId, true)) // verbose mode to generate address with type
-// cfx:type.user:0086ujfsa1a11uuecwen3xytdmp8f03v140ypk3mxc
+// CFX:TYPE.USER:0086UJFSA1A11UUECWEN3XYTDMP8F03V140YPK3MXC
 ```
 
 ### Decoding
