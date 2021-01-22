@@ -70,7 +70,12 @@ function getAddressType (hexAddress) {
     case 0x80:
       return 'contract'
     case 0x00:
-      return 'builtin'
+      for (const x of hexAddress) {
+        if (x !== 0x00) {
+          return 'builtin'
+        }
+      }
+      return 'null'
     default:
       throw new Error('hexAddress should start with 0x0, 0x1 or 0x8')
   }
