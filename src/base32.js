@@ -1,6 +1,6 @@
 'use strict'
 const BigInteger = require('bigi')
-const ALPHABET = '0123456789abcdefghjkmnprstuvwxyz'
+const ALPHABET = 'abcdefghjkmnprstuvwxyz0123456789'
 
 // pre-compute lookup table
 const SEPARATOR = ':'
