@@ -13,16 +13,16 @@ const hexBuffer = Buffer.from('106d49f8505410eb4e671d51f7d96d2c87807b09', 'hex')
 const netId = 1029 // Conflux main-net
 
 console.log(confluxAddr.encode(hexBuffer, netId))
-// cfx:0086ujfsa1a11uuecwen3xytdmp8f03v140ypk3mxc
+// cfx:aajg4wt2mbmbb44sp6szd783ry0jtad5bea80xdy7p
 
 console.log(confluxAddr.encode(hexBuffer, netId, true)) // verbose mode to generate address with type
-// CFX:TYPE.USER:0086UJFSA1A11UUECWEN3XYTDMP8F03V140YPK3MXC
+// CFX:TYPE.USER:AAJG4WT2MBMBB44SP6SZD783RY0JTAD5BEA80XDY7P
 ```
 
 ### Decoding
 ```javascript
 const confluxAddr = require('conflux-address-js')
-console.log(confluxAddr.decode('cfx:0086ujfsa1a11uuecwen3xytdmp8f03v140ypk3mxc'))
+console.log(confluxAddr.decode('cfx:aajg4wt2mbmbb44sp6szd783ry0jtad5bea80xdy7p'))
 /*
 { hexAddress:
    <Buffer 10 6d 49 f8 50 54 10 eb 4e 67 1d 51 f7 d9 6d 2c 87 80 7b 09>,
@@ -31,7 +31,7 @@ console.log(confluxAddr.decode('cfx:0086ujfsa1a11uuecwen3xytdmp8f03v140ypk3mxc')
  */
 
 
-console.log(confluxAddr.decode('cfx:type.user:0086ujfsa1a11uuecwen3xytdmp8f03v140ypk3mxc'))
+console.log(confluxAddr.decode('CFX:TYPE.USER:AAJG4WT2MBMBB44SP6SZD783RY0JTAD5BEA80XDY7P'))
 /*
 { hexAddress:
    <Buffer 10 6d 49 f8 50 54 10 eb 4e 67 1d 51 f7 d9 6d 2c 87 80 7b 09>,
