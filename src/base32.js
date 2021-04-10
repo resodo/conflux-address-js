@@ -1,10 +1,6 @@
-'use strict'
-const BigInteger = require('bigi')
-const ALPHABET = 'abcdefghjkmnprstuvwxyz0123456789'
+const JSBI = require('jsbi')
+const ALPHABET = 'ABCDEFGHJKMNPRSTUVWXYZ0123456789'
 
-// pre-compute lookup table
-const SEPARATOR = ':'
-const CSLEN = 8
 const ALPHABET_MAP = {}
 for (let z = 0; z < ALPHABET.length; z++) {
   const x = ALPHABET.charAt(z)
@@ -14,172 +10,85 @@ for (let z = 0; z < ALPHABET.length; z++) {
   ALPHABET_MAP[x] = z
 }
 
-function polymodStep (pre) {
-  const b = pre.shiftRight(35)
-  const mask = BigInteger.fromHex('07ffffffff')
+// pre defined BigInt could faster about 40 percent
+const BIGINT_0 = JSBI.BigInt(0)
+const BIGINT_1 = JSBI.BigInt(1)
+const BIGINT_5 = JSBI.BigInt(5)
+const BIGINT_35 = JSBI.BigInt(35)
+const BIGINT_0B00001 = JSBI.BigInt(0b00001)
+const BIGINT_0B00010 = JSBI.BigInt(0b00010)
+const BIGINT_0B00100 = JSBI.BigInt(0b00100)
+const BIGINT_0B01000 = JSBI.BigInt(0b01000)
+const BIGINT_0B10000 = JSBI.BigInt(0b10000)
+const BIGINT_0X07FFFFFFFF = JSBI.BigInt(0x07ffffffff)
+const BIGINT_0X98F2BC8E61 = JSBI.BigInt(0x98f2bc8e61)
+const BIGINT_0X79B76D99E2 = JSBI.BigInt(0x79b76d99e2)
+const BIGINT_0XF33E5FB3C4 = JSBI.BigInt(0xf33e5fb3c4)
+const BIGINT_0XAE2EABE2A8 = JSBI.BigInt(0xae2eabe2a8)
+const BIGINT_0X1E4F43E470 = JSBI.BigInt(0x1e4f43e470)
 
-  let v = pre.and(mask).shiftLeft(new BigInteger('5'))
+function convertBit (buffer, inBits, outBits, pad) {
+  const mask = (1 << outBits) - 1
+  const array = []
 
-  if (b.and(new BigInteger('1')).intValue() > 0) {
-    v = v.xor(BigInteger.fromHex('98f2bc8e61'))
-  }
-  if (b.and(new BigInteger('2')).intValue()) {
-    v = v.xor(BigInteger.fromHex('79b76d99e2'))
-  }
-  if (b.and(new BigInteger('4')).intValue()) {
-    v = v.xor(BigInteger.fromHex('f33e5fb3c4'))
-  }
-  if (b.and(new BigInteger('8')).intValue()) {
-    v = v.xor(BigInteger.fromHex('ae2eabe2a8'))
-  }
-  if (b.and(new BigInteger('16')).intValue()) {
-    v = v.xor(BigInteger.fromHex('1e4f43e470'))
-  }
-
-  return v
-}
-
-function prefixChk (prefix) {
-  let chk = new BigInteger('1')
-  for (let i = 0; i < prefix.length; ++i) {
-    const c = prefix.charCodeAt(i)
-
-    const mixwith = new BigInteger('' + (c & 0x1f))
-    chk = polymodStep(chk).xor(mixwith)
-  }
-
-  chk = polymodStep(chk)
-  return chk
-}
-
-function encode (prefix, words) {
-  // too long?
-  if ((prefix.length + CSLEN + 1 + words.length) > 90) {
-    throw new TypeError('Exceeds Base32 maximum length')
-  }
-
-  prefix = prefix.toLowerCase()
-
-  // determine chk mod
-  let chk = prefixChk(prefix)
-  let result = prefix + SEPARATOR
-  for (let i = 0; i < words.length; ++i) {
-    const x = words[i]
-    if ((x >>> 5) !== 0) {
-      throw new Error('Non 5-bit word')
-    }
-
-    chk = polymodStep(chk).xor(new BigInteger('' + x))
-    result += ALPHABET.charAt(x)
-  }
-
-  for (let i = 0; i < CSLEN; ++i) {
-    chk = polymodStep(chk)
-  }
-  chk = chk.xor(new BigInteger('1'))
-  for (let i = 0; i < CSLEN; ++i) {
-    const pos = 5 * (CSLEN - 1 - i)
-    const v2 = chk.shiftRight(new BigInteger('' + pos)).and(BigInteger.fromHex('1f'))
-    result += ALPHABET.charAt(v2.toString(10))
-  }
-
-  return result
-}
-
-function decode (str) {
-  if (str.length < 8) {
-    throw new TypeError(str + ' too short')
-  }
-  if (str.length > 90) {
-    throw new TypeError(str + ' too long')
-  }
-
-  // don't allow mixed case
-  const lowered = str.toLowerCase()
-  const uppered = str.toUpperCase()
-  if (str !== lowered && str !== uppered) {
-    throw new Error('Mixed-case string ' + str)
-  }
-
-  str = lowered
-
-  const split = str.lastIndexOf(SEPARATOR)
-  if (split === -1) {
-    throw new Error('No separator character for ' + str)
-  }
-
-  if (split === 0) {
-    throw new Error('Missing prefix for ' + str)
-  }
-
-  const prefix = str.slice(0, split)
-  const wordChars = str.slice(split + 1)
-  if (wordChars.length < 6) {
-    throw new Error('Data too short')
-  }
-
-  let chk = prefixChk(prefix)
-  const words = []
-  for (let i = 0; i < wordChars.length; ++i) {
-    const c = wordChars.charAt(i)
-    const v = ALPHABET_MAP[c]
-    if (v === undefined) {
-      throw new Error('Unknown character ' + c)
-    }
-
-    chk = polymodStep(chk).xor(new BigInteger('' + v))
-    // not in the checksum?
-    if (i + CSLEN >= wordChars.length) {
-      continue
-    }
-    words.push(v)
-  }
-
-  if (chk.toString(10) !== '1') {
-    throw new Error('Invalid checksum for ' + str)
-  }
-
-  return { prefix, words }
-}
-
-function convert (data, inBits, outBits, pad) {
-  let value = 0
   let bits = 0
-  const maxV = (1 << outBits) - 1
-
-  const result = []
-  for (let i = 0; i < data.length; ++i) {
-    value = (value << inBits) | data[i]
+  let value = 0
+  for (const byte of buffer) {
     bits += inBits
+    value = (value << inBits) | byte
 
     while (bits >= outBits) {
       bits -= outBits
-      result.push((value >>> bits) & maxV)
+      array.push((value >>> bits) & mask)
+    }
+  }
+  value = (value << (outBits - bits)) & mask
+
+  if (bits && pad) {
+    array.push(value)
+  } else if (value && !pad) {
+    throw new Error('Excess padding')
+  } else if (bits >= inBits && !pad) {
+    throw new Error('Non-zero padding')
+  }
+
+  return array
+}
+
+function polyMod (buffer) {
+  let checksumBigInt = BIGINT_1
+  for (const byte of buffer) {
+    // c0 = c >> 35;
+    const high = JSBI.signedRightShift(checksumBigInt, BIGINT_35) // XXX: checksumBigInt must be positive, signedRightShift is ok
+
+    // c = ((c & 0x07ffffffff) << 5) ^ d;
+    checksumBigInt = JSBI.bitwiseAnd(checksumBigInt, BIGINT_0X07FFFFFFFF)
+    checksumBigInt = JSBI.leftShift(checksumBigInt, BIGINT_5)
+    checksumBigInt = byte ? JSBI.bitwiseXor(checksumBigInt, JSBI.BigInt(byte)) : checksumBigInt // bit ^ 0 = bit
+
+    if (JSBI.notEqual(JSBI.bitwiseAnd(high, BIGINT_0B00001), BIGINT_0)) {
+      checksumBigInt = JSBI.bitwiseXor(checksumBigInt, BIGINT_0X98F2BC8E61)
+    }
+    if (JSBI.notEqual(JSBI.bitwiseAnd(high, BIGINT_0B00010), BIGINT_0)) {
+      checksumBigInt = JSBI.bitwiseXor(checksumBigInt, BIGINT_0X79B76D99E2)
+    }
+    if (JSBI.notEqual(JSBI.bitwiseAnd(high, BIGINT_0B00100), BIGINT_0)) {
+      checksumBigInt = JSBI.bitwiseXor(checksumBigInt, BIGINT_0XF33E5FB3C4)
+    }
+    if (JSBI.notEqual(JSBI.bitwiseAnd(high, BIGINT_0B01000), BIGINT_0)) {
+      checksumBigInt = JSBI.bitwiseXor(checksumBigInt, BIGINT_0XAE2EABE2A8)
+    }
+    if (JSBI.notEqual(JSBI.bitwiseAnd(high, BIGINT_0B10000), BIGINT_0)) {
+      checksumBigInt = JSBI.bitwiseXor(checksumBigInt, BIGINT_0X1E4F43E470)
     }
   }
 
-  if (pad) {
-    if (bits > 0) {
-      result.push((value << (outBits - bits)) & maxV)
-    }
-  } else {
-    if (bits >= inBits) {
-      throw new Error('Excess padding')
-    }
-    if ((value << (outBits - bits)) & maxV) {
-      throw new Error('Non-zero padding')
-    }
-  }
-
-  return result
+  return JSBI.bitwiseXor(checksumBigInt, BIGINT_1)
 }
 
-function toWords (bytes) {
-  return convert(bytes, 8, 5, true)
+module.exports = {
+  convertBit,
+  polyMod,
+  ALPHABET,
+  ALPHABET_MAP
 }
-
-function fromWords (words) {
-  return convert(words, 5, 8, false)
-}
-
-module.exports = { decode, encode, toWords, fromWords }

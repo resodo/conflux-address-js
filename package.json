@@ -7,7 +7,7 @@
   "author": "ypliu <resodo.liu@gmail.com>",
   "license": "MIT",
   "dependencies": {
-    "bigi": "^1.4.2"
+    "jsbi": "^3.1.4"
   },
   "devDependencies": {
     "@babel/cli": "^7.12.10",
