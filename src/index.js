@@ -1,10 +1,12 @@
-'use strict'
-/** global: Buffer */
+const {
+  ALPHABET,
+  ALPHABET_MAP,
+  polyMod,
+  convertBit
+} = require('./base32')
 
 const VERSION_BYTE = 0
 const NET_ID_LIMIT = 0xFFFFFFFF
-
-const base32 = require('./base32')
 
 function encodeNetId (netId) {
   if (!Number.isInteger(netId)) {
@@ -48,17 +50,6 @@ function decodeNetId (payload) {
   }
 }
 
-function encodePayload (hexAddress) {
-  return Buffer.concat([Buffer.from([VERSION_BYTE]), hexAddress])
-}
-
-function decodePayload (payload) {
-  if (payload[0] !== VERSION_BYTE) {
-    throw new Error('Can not recognize version byte')
-  }
-  return Buffer.from(payload.slice(1))
-}
-
 function getAddressType (hexAddress) {
   if (hexAddress.length < 1) {
     throw new Error('Empty payload in address')
@@ -90,18 +81,22 @@ function encode (hexAddress, netId, verbose = false) {
     throw new Error('hexAddress should be at least 20 bytes')
   }
 
-  const addressType = getAddressType(hexAddress)
+  const addressType = getAddressType(hexAddress).toUpperCase()
+  const netName = encodeNetId(netId).toUpperCase()
 
-  let encodedAddress = base32.encode(
-    encodeNetId(netId),
-    base32.toWords(encodePayload(hexAddress))
-  )
+  const netName5Bits = Buffer.from(netName).map(byte => byte & 0b11111)
+  const payload5Bits = convertBit([VERSION_BYTE, ...hexAddress], 8, 5, true)
 
-  if (verbose) {
-    const [prefix, payload] = encodedAddress.split(':')
-    encodedAddress = [prefix, `type.${addressType}`, payload].join(':').toUpperCase()
-  }
-  return encodedAddress
+  const checksumBigInt = polyMod([...netName5Bits, 0, ...payload5Bits, 0, 0, 0, 0, 0, 0, 0, 0])
+  const checksumBytes = Buffer.from(checksumBigInt.toString(16).padStart(10, '0'), 'hex')
+  const checksum5Bits = convertBit(checksumBytes, 8, 5, true)
+
+  const payload = payload5Bits.map(byte => ALPHABET[byte]).join('')
+  const checksum = checksum5Bits.map(byte => ALPHABET[byte]).join('')
+
+  return verbose
+    ? `${netName}:TYPE.${addressType}:${payload}${checksum}`
+    : `${netName}:${payload}${checksum}`.toLowerCase()
 }
 
 function decode (address) {
@@ -112,32 +107,37 @@ function decode (address) {
     throw new Error('Mixed-case address ' + address)
   }
 
-  const splits = address.split(':')
-  let shouldHaveType = ''
+  const [, netName, shouldHaveType, payload, checksum] = address.toUpperCase().match(/^([^:]+):(.+:)?(.{34})(.{8})$/)
 
-  let reducedAddress = address
-  if (splits.length === 3) {
-    shouldHaveType = splits[1]
-    reducedAddress = [splits[0], splits[2]].join(':')
+  const prefix5Bits = Buffer.from(netName).map(byte => byte & 0b11111)
+  const payload5Bits = []
+  for (const char of payload) {
+    payload5Bits.push(ALPHABET_MAP[char])
+  }
+  const checksum5Bits = []
+  for (const char of checksum) {
+    checksum5Bits.push(ALPHABET_MAP[char])
   }
 
-  const result = base32.decode(reducedAddress)
-  const data = base32.fromWords(result.words)
-  if (data.length < 1) {
-    throw new Error('Empty payload in address')
+  const [version, ...addressBytes] = convertBit(payload5Bits, 5, 8)
+  if (version !== VERSION_BYTE) {
+    throw new Error('Can not recognize version byte')
   }
 
-  const returnValue = {
-    hexAddress: decodePayload(data),
-    netId: decodeNetId(result.prefix),
-    type: getAddressType(decodePayload(data))
-  }
+  const hexAddress = Buffer.from(addressBytes)
+  const netId = decodeNetId(netName.toLowerCase())
+  const type = getAddressType(hexAddress)
 
-  if (shouldHaveType !== '' && `type.${returnValue.type}` !== shouldHaveType.toLowerCase()) {
+  if (shouldHaveType && `type.${type}:` !== shouldHaveType.toLowerCase()) {
     throw new Error('Type of address doesn\'t match')
   }
 
-  return returnValue
+  const bigInt = polyMod([...prefix5Bits, 0, ...payload5Bits, ...checksum5Bits])
+  if (Number(bigInt)) {
+    throw new Error(`Invalid checksum for ${address}`)
+  }
+
+  return { hexAddress, netId, type }
 }
 
-module.exports = { decode: decode, encode: encode }
+module.exports = { encode, decode }

@@ -1,5 +1,5 @@
 {
-  "name": "conflux-address-js",
+  "name": "@conflux-dev/conflux-address-js",
   "version": "1.0.4",
   "description": "The encoder and decoder for Conflux Network address",
   "main": "lib/index.js",
@@ -7,7 +7,7 @@
   "author": "ypliu <resodo.liu@gmail.com>",
   "license": "MIT",
   "dependencies": {
-    "bigi": "^1.4.2"
+    "jsbi": "^3.1.4"
   },
   "devDependencies": {
     "@babel/cli": "^7.12.10",
