@@ -75,7 +75,7 @@ function getAddressType (hexAddress) {
 
 function encode (hexAddress, netId, verbose = false) {
   if (typeof hexAddress === 'string') {
-    hexAddress = Buffer.from(hexAddress.slice(2), 'hex');
+    hexAddress = Buffer.from(hexAddress.slice(2), 'hex')
   }
   if (!(hexAddress instanceof Buffer)) {
     throw new Error('hexAddress should be passed as a Buffer')

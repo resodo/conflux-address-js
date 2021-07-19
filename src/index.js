@@ -1,5 +1,5 @@
 const { encode, decode } = require('./cip37')
-const CONST = require('./const');
+const CONST = require('./const')
 
 /**
  * Check whether a given address is valid, will return a boolean value
@@ -8,15 +8,15 @@ const CONST = require('./const');
  * @return {boolean}
  *
  */
-function isValidCfxAddress(address) {
+function isValidCfxAddress (address) {
   if (isString(address)) {
-    return false;
+    return false
   }
   try {
-    decode(address);
-    return true;
+    decode(address)
+    return true
   } catch (e) {
-    return false;
+    return false
   }
 }
 
@@ -26,9 +26,9 @@ function isValidCfxAddress(address) {
  * @param address {string}
  *
  */
-function verifyCfxAddress(address) {
-  decode(address);
-  return true;
+function verifyCfxAddress (address) {
+  decode(address)
+  return true
 }
 
 /**
@@ -39,19 +39,19 @@ function verifyCfxAddress(address) {
  *
  * @example
  */
- function hasNetworkPrefix(address) {
+function hasNetworkPrefix (address) {
   if (isString(address)) {
-    return false;
+    return false
   }
-  const parts = address.toLowerCase().split(':');
+  const parts = address.toLowerCase().split(':')
   if (parts.length !== 2 && parts.length !== 3) {
-    return false;
+    return false
   }
-  const prefix = parts[0];
+  const prefix = parts[0]
   if (prefix === CONST.PREFIX_CFX || prefix === CONST.PREFIX_CFXTEST) {
-    return true;
+    return true
   }
-  return prefix.startsWith(CONST.PREFIX_NET) && /^([1-9]\d*)$/.test(prefix.slice(3));
+  return prefix.startsWith(CONST.PREFIX_NET) && /^([1-9]\d*)$/.test(prefix.slice(3))
 }
 
 /**
@@ -61,28 +61,28 @@ function verifyCfxAddress(address) {
  * @return {string}
  *
  */
- function simplifyCfxAddress(address) {
+function simplifyCfxAddress (address) {
   if (!hasNetworkPrefix(address)) {
-    throw new Error('invalid base32 address');
+    throw new Error('invalid base32 address')
   }
-  const parts = address.toLocaleLowerCase().split(':');
+  const parts = address.toLocaleLowerCase().split(':')
   if (parts.length !== 3) {
-    return address;
+    return address
   }
-  return `${parts[0]}:${parts[2]}`;
+  return `${parts[0]}:${parts[2]}`
 }
 
-function shortenCfxAddress(address, compress = false) {
-  address = simplifyCfxAddress(address);
-  const [netPre, body] = address.split(':');
-  const tailLen = (netPre === 'cfx' && !compress) ? 8 : 4;
-  const pre = body.slice(0, 3);
-  const tail = body.slice(body.length - tailLen);
-  return `${netPre}:${pre}...${tail}`;
+function shortenCfxAddress (address, compress = false) {
+  address = simplifyCfxAddress(address)
+  const [netPre, body] = address.split(':')
+  const tailLen = (netPre === 'cfx' && !compress) ? 8 : 4
+  const pre = body.slice(0, 3)
+  const tail = body.slice(body.length - tailLen)
+  return `${netPre}:${pre}...${tail}`
 }
 
-function isString(data) {
-  return typeof data === 'string';
+function isString (data) {
+  return typeof data === 'string'
 }
 
 module.exports = {
