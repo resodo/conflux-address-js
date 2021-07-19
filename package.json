@@ -1,6 +1,6 @@
 {
   "name": "@conflux-dev/conflux-address-js",
-  "version": "1.1.6",
+  "version": "1.1.7",
   "description": "The encoder and decoder for Conflux Network address",
   "main": "lib/index.js",
   "repository": "https://github.com/resodo/conflux-address-js.git",

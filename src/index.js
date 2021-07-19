@@ -9,7 +9,7 @@ const CONST = require('./const')
  *
  */
 function isValidCfxAddress (address) {
-  if (isString(address)) {
+  if (!isString(address)) {
     return false
   }
   try {
@@ -40,7 +40,7 @@ function verifyCfxAddress (address) {
  * @example
  */
 function hasNetworkPrefix (address) {
-  if (isString(address)) {
+  if (!isString(address)) {
     return false
   }
   const parts = address.toLowerCase().split(':')
