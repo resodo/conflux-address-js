@@ -39,3 +39,14 @@ console.log(confluxAddr.decode('CFX:TYPE.USER:AAJG4WT2MBMBB44SP6SZD783RY0JTAD5BE
   type: 'user' }
  */
 ```
+
+
+### API
+
+* `encode`: Low level encode method
+* `decode`: Low level decode method
+* `isValidCfxAddress`: Return a boolean value indicating whether the address is valid
+* `verifyCfxAddress`: Check whether a address is valid, if not will throw an error
+* `hasNetworkPrefix`: Check a string whether has an network prefix
+* `simplifyCfxAddress`: Return a non verbose address 
+* `shortenCfxAddress`: Return a shorten address
