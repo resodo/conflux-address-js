@@ -8,7 +8,7 @@ Check [CIP-37](https://github.com/Conflux-Chain/CIPs/pull/53/) for the protocols
 ### Encoding
 
 ```javascript
-const confluxAddr = require('conflux-address-js')
+const confluxAddr = require('@conflux-dev/conflux-address-js')
 const hexBuffer = Buffer.from('106d49f8505410eb4e671d51f7d96d2c87807b09', 'hex')
 const netId = 1029 // Conflux main-net
 
@@ -21,7 +21,7 @@ console.log(confluxAddr.encode(hexBuffer, netId, true)) // verbose mode to gener
 
 ### Decoding
 ```javascript
-const confluxAddr = require('conflux-address-js')
+const confluxAddr = require('@conflux-dev/conflux-address-js')
 console.log(confluxAddr.decode('cfx:aajg4wt2mbmbb44sp6szd783ry0jtad5bea80xdy7p'))
 /*
 { hexAddress:
