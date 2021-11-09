@@ -1,5 +1,6 @@
 const { encode, decode } = require('./cip37')
 const CONST = require('./const')
+const { isHexString } = require('./utils')
 
 /**
  * Check whether a given address is valid, will return a boolean value
@@ -51,7 +52,9 @@ function hasNetworkPrefix (address) {
   if (prefix === CONST.PREFIX_CFX || prefix === CONST.PREFIX_CFXTEST) {
     return true
   }
-  return prefix.startsWith(CONST.PREFIX_NET) && /^([1-9]\d*)$/.test(prefix.slice(3))
+  return (
+    prefix.startsWith(CONST.PREFIX_NET) && /^([1-9]\d*)$/.test(prefix.slice(3))
+  )
 }
 
 /**
@@ -75,7 +78,7 @@ function simplifyCfxAddress (address) {
 function shortenCfxAddress (address, compress = false) {
   address = simplifyCfxAddress(address)
   const [netPre, body] = address.split(':')
-  const tailLen = (netPre === 'cfx' && !compress) ? 8 : 4
+  const tailLen = netPre === 'cfx' && !compress ? 8 : 4
   const pre = body.slice(0, 3)
   const tail = body.slice(body.length - tailLen)
   return `${netPre}:${pre}...${tail}`
@@ -85,6 +88,33 @@ function isString (data) {
   return typeof data === 'string'
 }
 
+function isZeroAddress (address) {
+  if (!isHexString(address)) throw new Error('Only hex is allowed')
+  return address === CONST.ZERO_ADDRESS_HEX
+}
+
+function isInternalContractAddress (address) {
+  if (!isHexString(address)) throw new Error('Only hex is allowed')
+  return (
+    address === CONST.ADMIN_CONTROL ||
+    address === CONST.SPONSOR_CONTROL ||
+    address === CONST.STAKING ||
+    address === CONST.CONFLUX_CONTEXT ||
+    address === CONST.POS_REGISTER
+  )
+}
+
+function isValidHexAddress (address) {
+  return isHexString(address) && address.length === 42
+}
+
+// TOOD check address's checksum
+function isValidCfxHexAddress (address) {
+  if (address.length !== 42) return false
+  if (isZeroAddress(address) || isInternalContractAddress(address)) return true
+  return address.startsWith('0x1') || address.startsWith('0x8')
+}
+
 module.exports = {
   encode,
   decode,
@@ -92,5 +122,9 @@ module.exports = {
   verifyCfxAddress,
   hasNetworkPrefix,
   simplifyCfxAddress,
-  shortenCfxAddress
+  shortenCfxAddress,
+  isZeroAddress,
+  isInternalContractAddress,
+  isValidHexAddress,
+  isValidCfxHexAddress
 }
