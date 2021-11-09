@@ -7,12 +7,7 @@ try {
       }
       return encode(hexAddress, netId, verbose)
     },
-    decode: function (base32) {
-      const decoded = decode(base32)
-      if (!decoded) throw new Error('Decode failed')
-      decoded.hexAddress = Buffer.from(decoded.hexAddress.slice(2), 'hex')
-      return decoded
-    }
+    decode
   }
 } catch (e) {
   console.log('@conflux-dev/conflux-address-rust is not installed use purejs version')
