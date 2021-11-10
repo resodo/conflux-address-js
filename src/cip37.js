@@ -10,6 +10,6 @@ try {
     decode
   }
 } catch (e) {
-  console.log('@conflux-dev/conflux-address-rust is not installed use purejs version')
+  console.log('To gain a performance boost install @conflux-dev/conflux-address-rust')
   module.exports = require('./pure-js-cip37.js')
 }

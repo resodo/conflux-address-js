@@ -1,14 +1,13 @@
 {
   "name": "@conflux-dev/conflux-address-js",
-  "version": "1.3.1",
+  "version": "1.3.2",
   "description": "The encoder and decoder for Conflux Network address",
   "main": "lib/index.js",
   "typings": "typings/index.d.ts",
-  "repository": "https://github.com/resodo/conflux-address-js.git",
+  "repository": "https://github.com/conflux-fans/conflux-address-js.git",
   "author": "ypliu <resodo.liu@gmail.com>",
   "license": "MIT",
   "dependencies": {
-    "@conflux-dev/conflux-address-rust": "^0.1.6",
     "jsbi": "^3.1.4"
   },
   "devDependencies": {
