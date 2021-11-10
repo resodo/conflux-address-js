@@ -1,6 +1,6 @@
 {
   "name": "@conflux-dev/conflux-address-js",
-  "version": "1.3.3",
+  "version": "1.3.5",
   "description": "The encoder and decoder for Conflux Network address",
   "main": "lib/index.js",
   "typings": "typings/index.d.ts",
@@ -34,5 +34,8 @@
     "lib",
     "src",
     "typings"
-  ]
+  ],
+  "browser": {
+    "lib/index.js": "lib/pure-js.js"
+  }
 }

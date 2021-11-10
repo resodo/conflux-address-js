@@ -1,4 +1,4 @@
-const { encode, decode } = require('./cip37')
+const { encode, decode } = require('./cip37/pure-js-cip37')
 const { ...rest } = require('./address-utils')
 const { isString } = require('./utils')
 

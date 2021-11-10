@@ -4,8 +4,8 @@ const {
   polyMod,
   convertBit
 } = require('./base32')
-const CONST = require('./const')
-const { isHexString } = require('./utils')
+const CONST = require('../const')
+const { isHexString } = require('../utils')
 
 const VERSION_BYTE = 0
 const NET_ID_LIMIT = 0xFFFFFFFF

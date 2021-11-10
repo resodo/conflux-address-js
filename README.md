@@ -51,6 +51,11 @@ console.log(confluxAddr.decode('CFX:TYPE.USER:AAJG4WT2MBMBB44SP6SZD783RY0JTAD5BE
 * `hasNetworkPrefix`: Check a string whether has an network prefix
 * `simplifyCfxAddress`: Return a non verbose address
 * `shortenCfxAddress`: Return a shorten address
+* `isZeroAddress`: Check whether a address is zero address
+* `isInternalContractAddress`: Check where a address is Conflux InternalContract address
+* `isValidHexAddress`: Check whether a address is valid hex address
+* `isValidCfxHexAddress`: Check where a address is valid Conflux hex address
+
 
 ## Performance
 
