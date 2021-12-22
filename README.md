@@ -1,4 +1,5 @@
 # conflux-address-js
+
 The simple encoder and decoder for Conflux address.
 
 Check [CIP-37](https://github.com/Conflux-Chain/CIPs/pull/53/) for the protocols.
@@ -8,7 +9,7 @@ Check [CIP-37](https://github.com/Conflux-Chain/CIPs/pull/53/) for the protocols
 ### Encoding
 
 ```javascript
-const confluxAddr = require('conflux-address-js')
+const confluxAddr = require('@conflux-dev/conflux-address-js')
 const hexBuffer = Buffer.from('106d49f8505410eb4e671d51f7d96d2c87807b09', 'hex')
 const netId = 1029 // Conflux main-net
 
@@ -20,8 +21,9 @@ console.log(confluxAddr.encode(hexBuffer, netId, true)) // verbose mode to gener
 ```
 
 ### Decoding
+
 ```javascript
-const confluxAddr = require('conflux-address-js')
+const confluxAddr = require('@conflux-dev/conflux-address-js')
 console.log(confluxAddr.decode('cfx:aajg4wt2mbmbb44sp6szd783ry0jtad5bea80xdy7p'))
 /*
 { hexAddress:
@@ -39,3 +41,22 @@ console.log(confluxAddr.decode('CFX:TYPE.USER:AAJG4WT2MBMBB44SP6SZD783RY0JTAD5BE
   type: 'user' }
  */
 ```
+
+### API
+
+* `encode`: Low level encode method
+* `decode`: Low level decode method
+* `isValidCfxAddress`: Return a boolean value indicating whether the address is valid
+* `verifyCfxAddress`: Check whether a address is valid, if not will throw an error
+* `hasNetworkPrefix`: Check a string whether has an network prefix
+* `simplifyCfxAddress`: Return a non verbose address
+* `shortenCfxAddress`: Return a shorten address
+* `isZeroAddress`: Check whether a address is zero address
+* `isInternalContractAddress`: Check where a address is Conflux InternalContract address
+* `isValidHexAddress`: Check whether a address is valid hex address
+* `isValidCfxHexAddress`: Check where a address is valid Conflux hex address
+
+
+## Performance
+
+To gain a address conversion performance boost, you can install [`@conflux-dev/conflux-address-rust`](https://github.com/conflux-fans/conflux-address-rust-binding) in your project. Which will be used to relace the purejs version and can gain a `10-100` performance boost.
